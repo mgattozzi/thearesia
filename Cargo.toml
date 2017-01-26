@@ -2,5 +2,22 @@
 name = "thearesia"
 version = "0.1.0"
 authors = ["Michael Gattozzi <mgattozzi@gmail.com>"]
+description = "A GitHub bot written in Rust"
+repository = "https://github.com/mgattozzi/thearesia.gi"
+homepage = "https://github.com/mgattozzi/thearesia"
 
 [dependencies]
+# Since I control the github-rs API and don't
+# plan on releasing this anytime soon for actual use
+# I will add it as a github dep
+github-rs = { git = "https://github.com/mgattozzi/github-rs" }
+hyper = { git = "https://github.com/hyperium/hyper" }
+futures = "0.1"
+
+[dependencies.clippy]
+optional = true
+version = "0.0.104"
+
+[features]
+default = []
+dev = ["clippy"]
