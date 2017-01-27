@@ -41,14 +41,9 @@ impl Service for Webhook {
             // Get all of the chunks streamed to us in our request
             // GitHub gives us a lot of data so there might be
             // more than one Chunk
-            body.collect()
-                // Then put them all into a single buffer for parsing
-                .and_then(move |chunk| {
-                    let mut buffer: Vec<u8> = Vec::new();
-                    for i in chunk {
-                        buffer.append(&mut i.to_vec());
-                    }
-                    Ok(buffer)
+            body.fold(Vec::new(), |mut v, chunk| {
+                    v.extend(&chunk[..]);
+                    future::ok::<_, error::Error>(v)
                 })
                 // If there is JSON do things with it
                 // Send to the server that we got the data
