@@ -7,8 +7,8 @@ extern crate futures;
 extern crate serde;
 extern crate serde_json;
 
-use futures::Future;
-use futures::Stream;
+use futures::{Future, Stream};
+use futures::future;
 use hyper::server::{Service, Http};
 use hyper::server;
 use hyper::error;
@@ -64,7 +64,7 @@ impl Service for Webhook {
 
             let mut res = server::Response::new();
             res.set_status(MethodNotAllowed);
-            futures::finished(res).boxed()
+            future::ok(res).boxed()
 
         }
     }
