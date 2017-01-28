@@ -12,9 +12,9 @@ homepage = "https://github.com/mgattozzi/thearesia"
 # I will add it as a github dep
 github-rs = { git = "https://github.com/mgattozzi/github-rs" }
 hyper = { git = "https://github.com/hyperium/hyper" }
-futures = "0.1"
-serde = "~0.9.0"
-serde_json = "~0.9.0"
+futures = "~0.1"
+serde = "~0.9"
+serde_json = "~0.9"
 
 [dependencies.clippy]
 optional = true
