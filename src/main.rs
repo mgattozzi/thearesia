@@ -1,12 +1,16 @@
-//! Thearesia a tool to maintain GitHub Repos and Organizations
-#![feature(plugin)]
-#![cfg_attr(feature = "dev", plugin(clippy))]
+//! Thearesia a bot to maintain GitHub Repos and Organizations
 
 extern crate futures;
 extern crate github_rs;
 extern crate hyper;
+#[macro_use]
+extern crate nom;
 extern crate serde;
+#[macro_use]
 extern crate serde_json;
+
+mod comment;
+mod client;
 
 use futures::{Future, Stream};
 use futures::future;
@@ -16,12 +20,11 @@ use hyper::server;
 use hyper::error;
 use hyper::Method::Post;
 use hyper::status::StatusCode::{BadRequest, MethodNotAllowed};
-use serde_json::Value;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::borrow::Cow;
 
 fn main() {
-    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
+    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 4040);
     let _ = Http::new()
         .bind(&socket, || Ok(Webhook))
         .map(|server| server.run())
@@ -82,39 +85,38 @@ impl Service for Webhook {
                     if !buffer.is_empty() {
                         // For now this is generic but when each event type is implemented
                         // deserialize to specific types
-                        let deserialized = serde_json::from_slice::<Value>(&buffer).unwrap();
                         use self::Event::*;
                         match event_type {
-                            WildCard => println!("{:#?}", deserialized),
-                            CommitComment => println!("{:#?}", deserialized),
-                            Create => println!("{:#?}", deserialized),
-                            Delete => println!("{:#?}", deserialized),
-                            Deployment => println!("{:#?}", deserialized),
-                            DeploymentStatus => println!("{:#?}", deserialized),
-                            Fork => println!("{:#?}", deserialized),
-                            Gollum => println!("{:#?}", deserialized),
-                            IssueComment => println!("{:#?}", deserialized),
-                            Issues => println!("{:#?}", deserialized),
-                            Label => println!("{:#?}", deserialized),
-                            Member => println!("{:#?}", deserialized),
-                            Membership => println!("{:#?}", deserialized),
-                            Milestone => println!("{:#?}", deserialized),
-                            Organization => println!("{:#?}", deserialized),
-                            PageBuild => println!("{:#?}", deserialized),
-                            ProjectCard => println!("{:#?}", deserialized),
-                            ProjectColumn => println!("{:#?}", deserialized),
-                            Project => println!("{:#?}", deserialized),
-                            Public => println!("{:#?}", deserialized),
-                            PullRequestReviewComment => println!("{:#?}", deserialized),
-                            PullRequestReview => println!("{:#?}", deserialized),
-                            PullRequest => println!("{:#?}", deserialized),
-                            Push => println!("{:#?}", deserialized),
-                            Repository => println!("{:#?}", deserialized),
-                            Release => println!("{:#?}", deserialized),
-                            Status => println!("{:#?}", deserialized),
-                            Team => println!("{:#?}", deserialized),
-                            TeamAdd => println!("{:#?}", deserialized),
-                            Watch => println!("{:#?}", deserialized),
+                            WildCard => println!("I'm a wild_card event"),
+                            CommitComment => comment::commit_comment(buffer),
+                            Create => println!("I'm a create event"),
+                            Delete => println!("I'm a delete event"),
+                            Deployment => println!("I'm a deployment event"),
+                            DeploymentStatus => println!("I'm a deployment_status event"),
+                            Fork => println!("I'm a fork event"),
+                            Gollum => println!("I'm a gollum event"),
+                            IssueComment => comment::issue_comment(buffer),
+                            Issues => println!("I'm an issues event"),
+                            Label => println!("I'm a label event"),
+                            Member => println!("I'm a member event"),
+                            Membership => println!("I'm a membership event"),
+                            Milestone => println!("I'm a milestone event"),
+                            Organization => println!("I'm an organization event"),
+                            PageBuild => println!("I'm a page_build event"),
+                            ProjectCard => println!("I'm a project_card event"),
+                            ProjectColumn => println!("I'm a project_column event"),
+                            Project => println!("I'm a project event"),
+                            Public => println!("I'm a pubic event"),
+                            PullRequestReviewComment => println!("I'm a pull_request_review_comment event"),
+                            PullRequestReview => println!("I'm a pull_request_review event"),
+                            PullRequest => println!("I'm a pull_request event"),
+                            Push => println!("I'm a push event"),
+                            Repository => println!("I'm a repository event"),
+                            Release => println!("I'm a release event"),
+                            Status => println!("I'm a status event"),
+                            Team => println!("I'm a team event"),
+                            TeamAdd => println!("I'm a team_add event"),
+                            Watch => println!("I'm a watch event"),
                         }
                     }
 
