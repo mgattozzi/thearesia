@@ -1,6 +1,7 @@
 //! Thearesia a bot to maintain GitHub Repos and Organizations
 
 extern crate futures;
+#[macro_use]
 extern crate github_rs;
 extern crate hyper;
 #[macro_use]
