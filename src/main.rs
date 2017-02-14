@@ -10,6 +10,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 
+#[macro_use]
+mod macros;
 mod comment;
 mod client;
 
@@ -84,8 +86,6 @@ impl Service for Webhook {
                 // Send to the server that we got the data
                 .map(move |buffer| {
                     if !buffer.is_empty() {
-                        // For now this is generic but when each event type is implemented
-                        // deserialize to specific types
                         use self::Event::*;
                         match event_type {
                             WildCard => println!("I'm a wild_card event"),
