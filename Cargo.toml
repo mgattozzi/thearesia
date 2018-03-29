@@ -7,12 +7,17 @@ repository = "https://github.com/mgattozzi/thearesia.git"
 homepage = "https://github.com/mgattozzi/thearesia"
 
 [dependencies]
-hyper = { git = "https://github.com/hyperium/hyper" }
-futures = "~0.1"
-serde = "~0.9"
-serde_json = "~0.9"
-nom = "^2.1"
+failure = "*"
+futures = "*"
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
+hyper = "*"
+hyper-rustls = "*"
+tokio-core = "*"
+lazy_static = "*"
+dotenv = "*"
 
 [dependencies.github-rs]
 git = "https://github.com/mgattozzi/github-rs"
-branch = "thearesia"
+branch = "issues-params"
