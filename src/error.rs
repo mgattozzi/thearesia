@@ -3,6 +3,8 @@ use github_rs as gh;
 use hyper;
 use serde_json;
 
+pub type Result<T> = ::std::result::Result<T, ThearesiaFailure>;
+
 #[derive(Debug, Fail, Serialize, Deserialize)]
 pub enum ThearesiaFailure {
     #[fail(display = "github-rs failed error was: {}", error)]

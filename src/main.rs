@@ -17,16 +17,15 @@ extern crate serde;
 mod airtable;
 mod error;
 mod json;
+mod sync;
 
 use airtable::AirtableClient;
 use dotenv::dotenv;
-use error::ThearesiaFailure;
-use github_rs::client::{ Github, Executor };
-use hyper::StatusCode;
-use json::AssignedIssuesRecord;
+use error::*;
+use github_rs::client::Github;
+use sync::*;
+
 use std::env;
-use std::collections::HashSet;
-use std::{ thread, time };
 
 lazy_static! {
     static ref GITHUB_KEY: String = {
@@ -49,64 +48,10 @@ fn main() {
     }
 }
 
-fn run() -> Result<(), ThearesiaFailure> {
+fn run() -> Result<()> {
     let gclient = Github::new(GITHUB_KEY.to_string())?;
     let mut aclient = AirtableClient::new()?;
-
-    let issues = gclient.get()
-                        .issues()
-                        .filter("assigned")
-                        .state("open")
-                        .paginated_execute::<serde_json::Value>()?;
-
-
-    let open_github_issues = issues.into_iter()
-                   .filter_map(|(_,_,i)| {
-                        // We can unwrap because we know these are all indeed Strings for these
-                        // fields
-                        let status = "Assigned".to_string();
-                        let issue  = i["html_url"].as_str().unwrap().to_string();
-                        let opened = i["created_at"].as_str().unwrap().to_string();
-                        let closed = None;
-                        let repo   = i["repository"]["full_name"].as_str().unwrap().to_string();
-                        let title  = i["title"].as_str().unwrap().to_string();
-
-                        if issue.contains("/pull") {
-                            return None;
-                        }
-
-                        Some(AssignedIssuesRecord {
-                            status,
-                            issue,
-                            opened,
-                            closed,
-                            repo,
-                            issue_title: title,
-                        })
-                   }).collect::<HashSet<AssignedIssuesRecord>>();
-
-
-    let current_open_issues = aclient.get_assigned_issues()?
-                                     .records
-                                     .into_iter()
-                                     .map(|i| i.fields)
-                                     .filter(|i| i.status != "Completed")
-                                     .collect::<HashSet<AssignedIssuesRecord>>();
-
-    let not_inserted_issues = open_github_issues.difference(&current_open_issues);
-
-    for i in not_inserted_issues {
-        loop {
-            match aclient.create_assigned_issue(i)? {
-                (StatusCode::TooManyRequests, _) => thread::sleep(time::Duration::new(5,0)),
-                (StatusCode::Ok, _) => break,
-                (a@_, err_json) => return Err(ThearesiaFailure::StatusCodeFail{
-                    error: a.to_string() + " " + &err_json.to_string()
-                }),
-            }
-        }
-    }
-
+    sync_new_assigned_issues(&gclient, &mut aclient)?;
     Ok(())
 }
 
